@@ -3,6 +3,7 @@
 # pip install sodapy
 
 import pandas as pd
+import boto3
 from sodapy import Socrata
 
 # Unauthenticated client only works with public data sets. Note 'None'
@@ -70,4 +71,7 @@ df_df = df_df.merge(location_df[['Sensor_ID', 'Location','Sensor_Description']],
 # store Ped day count data into day_count.csv
 df_df.to_csv('day_count.csv')
 
-
+# upload csv files to s3
+s3 = boto3.resource('s3')    
+s3.Bucket('mel-ped-count').upload_file('day_count.csv','test/day_ped_count.csv')
+s3.Bucket('mel-ped-count').upload_file('month_count.csv','test/month_ped_count.csv')
