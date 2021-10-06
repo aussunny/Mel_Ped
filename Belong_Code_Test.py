@@ -5,7 +5,7 @@
 import pandas as pd
 import boto3
 from sodapy import Socrata
-
+##################################################Get Data###############################################
 # Unauthenticated client only works with public data sets. Note 'None'
 # in place of application token, and no username or password:
 #client = Socrata("data.melbourne.vic.gov.au", None) this way only limited 2000 rows can be download
@@ -22,6 +22,7 @@ results_location = client.get("h57g-5234")
 
 count_df = pd.DataFrame.from_records(results_count)
 location_df = pd.DataFrame.from_records(results_location)
+##################################################Clean Data#############################################
 # Clean dataset
 count_df.drop_duplicates(inplace = True)
 count_df=count_df.dropna()
@@ -37,8 +38,9 @@ c_df.rename(columns={'hourly_counts': 'Hourly_Counts', 'month':'Month','sensor_i
 c_df = c_df.sort_values('Day')
 
 # prep location info
-location_df.rename(columns={'sensor_id':'Sensor_ID', 'location':'Location','sensor_description':'Sensor_Description'}, inplace = True)
+location_df.rename(columns={'sensor_id':'Sensor_ID', 'location':'Location','sensor_description':'Sensor_Description', 'latitude':'Latitude', 'longitude':'Longitude'}, inplace = True)
 
+##########################################################Data Analysis for Monthly count#####################################################
 # group the records by the month and year, sum the pedestrian for each sensor id
 df_m = c_df.groupby(['Year','Month','Sensor_ID']).sum().reset_index()
 
@@ -48,12 +50,12 @@ df_mf = df_mf.drop(['Year','Month'], axis = 1).reset_index()
 
 #add the location info
 df_mf.rename(columns={"Hourly_Counts":"Monthly_Counts","level_2":"Monthly_Top10"}, inplace = True)
-df_mf = df_mf.merge(location_df[['Sensor_ID', 'Location','Sensor_Description']], 'left')
+df_mf = df_mf.merge(location_df[['Sensor_ID', 'Location','Sensor_Description','Latitude','Longitude']], 'left')
 
 # store Ped Month count data into month_count.csv
-df_mf.to_csv('month_count.csv')
+df_mf.to_csv('month_count.csv', index = False)
 
-
+##########################################################Data Analysis for Daily count#####################################################
 # Top 10 location by Day, remove the columns for year and month
 c1_df = c_df.drop(['Year','Month'], axis = 1)
 
@@ -66,11 +68,12 @@ df_df = df_df.drop(['Day'], axis = 1).reset_index()
 
 #add the location info
 df_df.rename(columns={"Hourly_Counts":"Daily_Counts","level_1":"Daily_Top10"}, inplace = True)
-df_df = df_df.merge(location_df[['Sensor_ID', 'Location','Sensor_Description']], 'left')
+df_df = df_df.merge(location_df[['Sensor_ID', 'Location','Sensor_Description','Latitude','Longitude']], 'left')
 
 # store Ped day count data into day_count.csv
-df_df.to_csv('day_count.csv')
+df_df.to_csv('day_count.csv', index = False)
 
+##########################################################Upload Data To S3#####################################################
 # upload csv files to s3
 s3 = boto3.resource('s3')    
 s3.Bucket('mel-ped-count').upload_file('day_count.csv','test/day_ped_count.csv')
