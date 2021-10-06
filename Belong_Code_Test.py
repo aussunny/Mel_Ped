@@ -9,9 +9,15 @@ from sodapy import Socrata
 # Unauthenticated client only works with public data sets. Note 'None'
 # in place of application token, and no username or password:
 #client = Socrata("data.melbourne.vic.gov.au", None) this way only limited 2000 rows can be download
-client = Socrata("data.melbourne.vic.gov.au", 'Aa5Z6j5KVl9WInFNWv5WP0Um8', 
-                 username = 'aussunnysun@gmail.com',
-                password = '87654321Sm')
+client = Socrata("data.melbourne.vic.gov.au", 'xxxxxxxxxx', 
+                 username = 'xxxxxxx@gmail.com',
+                password = 'xxxxxxxx')
+
+# Example authenticated client (needed for non-public datasets):
+# client = Socrata(data.melbourne.vic.gov.au,
+#                  MyAppToken,
+#                  userame="user@example.com",
+#                  password="AFakePassword")
 
 # Have to use a limit to get all data, checked on the original dataset limit = 3860331 rows
 # dictionaries by sodapy.
@@ -75,6 +81,7 @@ df_df.to_csv('day_count.csv', index = False)
 
 ##########################################################Upload Data To S3#####################################################
 # upload csv files to s3
+# configure your own access key and secret for AWS CLI and replace the bucket name below with your own bucket
 s3 = boto3.resource('s3')    
 s3.Bucket('mel-ped-count').upload_file('day_count.csv','test/day_ped_count.csv')
 s3.Bucket('mel-ped-count').upload_file('month_count.csv','test/month_ped_count.csv')
