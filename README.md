@@ -1,6 +1,6 @@
 # Mel_Ped
 Melbourne City Pedestrians Analysis
-required packages:
-pip install pandas
-pip install sodapy
-pip install boto3
+required packages: <br>
+pip install pandas <br>
+pip install sodapy<br>
+pip install boto3<br>
